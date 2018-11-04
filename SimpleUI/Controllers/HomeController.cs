@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using Serilog;
-using Serilog.Context;
 using SimpleUI.Models;
 
 namespace SimpleUI.Controllers
