@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <Reference Include="Serilog.Enrichers.AspnetcoreHttpcontext">
-      <HintPath>..\..\..\..\..\Source\Repos\serilog-enrichers-aspnetcore-httpcontext\src\Serilog.Enrichers.AspnetcoreHttpcontext\bin\Debug\netstandard2.0\Serilog.Enrichers.AspnetcoreHttpcontext.dll</HintPath>
+      <HintPath>..\..\serilog-enrichers-aspnetcore-httpcontext\src\Serilog.Enrichers.AspnetcoreHttpcontext\bin\Debug\netstandard2.0\Serilog.Enrichers.AspnetcoreHttpcontext.dll</HintPath>
     </Reference>
   </ItemGroup>
 
