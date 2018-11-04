@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using Serilog;
+using Serilog.Context;
 using SimpleUI.Models;
 
 namespace SimpleUI.Controllers
@@ -36,27 +38,33 @@ namespace SimpleUI.Controllers
             //return View();
         }
 
+        public IActionResult BadPageWithQuery(int id, string code)
+        {
+            throw new System.Exception("Something bad happened.");
+        }
+
         public async Task<IActionResult> GoodApi()
         {
             var client = new HttpClient();
             var token = await HttpContext.GetTokenAsync("access_token");
             client.SetBearerToken(token);
 
-            var content = await client.GetStringAsync("https://localhost:44389/api/Values");
+            var response = await GetWithHandlingAsync(client, "https://localhost:44389/api/Values");
+            
+            ViewBag.Json = JArray.Parse(await response.Content.ReadAsStringAsync()).ToString();
 
-            ViewBag.Json = JArray.Parse(content).ToString();
             return View();
         }
 
         public async Task<IActionResult> UnauthApi()
         {
             var client = new HttpClient();
-            var token = await HttpContext.GetTokenAsync("id_token");
+            var token = await HttpContext.GetTokenAsync("id_token");  // consciously getting wrong token here
             client.SetBearerToken(token);
 
-            var content = await client.GetStringAsync("https://localhost:44389/api/Values");
-
-            ViewBag.Json = JArray.Parse(content).ToString();
+            var response = await GetWithHandlingAsync(client, "https://localhost:44389/api/Values");
+            
+            ViewBag.Json = JArray.Parse(await response.Content.ReadAsStringAsync()).ToString();
             return View("BadApi");  // should never really get here....            
         }
 
@@ -66,9 +74,9 @@ namespace SimpleUI.Controllers
             var token = await HttpContext.GetTokenAsync("access_token");
             client.SetBearerToken(token);
 
-            var content = await client.GetStringAsync("https://localhost:44389/api/Values/123");  // this throws exception
-
-            ViewBag.Json = JArray.Parse(content).ToString();
+            var response = await GetWithHandlingAsync(client, "https://localhost:44389/api/Values/123");
+            
+            ViewBag.Json = JArray.Parse(await response.Content.ReadAsStringAsync()).ToString();
             return View(); // should never really get here....
         }
 
@@ -81,6 +89,40 @@ namespace SimpleUI.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        private static async Task<HttpResponseMessage> GetWithHandlingAsync(HttpClient client, string apiRoute)
+        {
+            var response = await client.GetAsync(apiRoute);
+            if (!response.IsSuccessStatusCode)
+            {
+                string error = "";
+                string id = "";
+
+                if (response.Content.Headers.ContentLength > 0)
+                {
+                    var j = JObject.Parse(await response.Content.ReadAsStringAsync());
+                    error = (string) j["error"];
+                    id = (string) j["id"];
+                }
+
+                //below logs warning with these details and THEN throws excpetion, which will also get logged
+                //    but without the details from the API call and response.
+                //    An alternative would be to use Serilog.Enrichers.Exceptions and include the API details
+                //    in the ex.Data fields -- e.g. ex.Data.Add("ApiStatus", (int) response.StatusCode);
+                //    Then you would throw the exception and only get ONE log entry with all of the details
+                var ex = new Exception("API Failure");
+                Log.Warning(ex,
+                    "Got non-success response from API {ApiStatus}--{ApiError}--{ApiErrorId}--{ApiUrl}",
+                    (int) response.StatusCode,
+                    error,
+                    id,
+                    $"GET {apiRoute}");
+
+                throw ex;
+            }            
+
+            return response;
         }
     }
 }

@@ -21,10 +21,10 @@ namespace SimpleUI
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                //.Enrich.FromLogContext()
-                //.Enrich.WithMachineName()
-                //.Enrich.WithProperty("Assembly", $"{name.Name}")
-                //.Enrich.WithProperty("Version", $"{name.Version}")
+                .Enrich.FromLogContext()
+                .Enrich.WithMachineName()
+                .Enrich.WithProperty("Assembly", $"{name.Name}")
+                .Enrich.WithProperty("Version", $"{name.Version}")
                 .WriteTo.File(new RenderedCompactJsonFormatter(), @"C:\users\edahl\Source\Logs\SimpleUi.json")
                 .CreateLogger();
 
