@@ -3,3 +3,7 @@
 ################################################################################
 
 /.vs
+/SimpleApi/bin/Debug/netcoreapp2.1
+/SimpleApi/obj
+/SimpleUI/bin/Debug/netcoreapp2.1
+/SimpleUI/obj
