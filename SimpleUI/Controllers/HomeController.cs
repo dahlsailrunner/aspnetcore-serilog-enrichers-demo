@@ -39,7 +39,7 @@ namespace SimpleUI.Controllers
 
         public IActionResult BadPageWithQuery(int id, string code)
         {
-            throw new System.Exception("Something bad happened.");
+            throw new Exception("Something bad happened.");
         }
 
         public async Task<IActionResult> GoodApi()
@@ -77,12 +77,7 @@ namespace SimpleUI.Controllers
             
             ViewBag.Json = JArray.Parse(await response.Content.ReadAsStringAsync()).ToString();
             return View(); // should never really get here....
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        }        
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

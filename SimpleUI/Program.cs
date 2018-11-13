@@ -16,15 +16,11 @@ namespace SimpleUI
     public class Program
     {
         public static int Main(string[] args)
-        {
-            var name = Assembly.GetExecutingAssembly().GetName();
+        {           
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                .Enrich.FromLogContext()
-                .Enrich.WithMachineName()
-                .Enrich.WithProperty("Assembly", $"{name.Name}")
-                .Enrich.WithProperty("Version", $"{name.Version}")
+               
                 .WriteTo.File(new RenderedCompactJsonFormatter(), @"C:\users\edahl\Source\Logs\SimpleUi.json")
                 .CreateLogger();
 
@@ -49,16 +45,7 @@ namespace SimpleUI
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
                 .UseSerilog();
-                //.UseSerilog((provider, ContextBoundObject, loggerConfig) =>
-                //{
-                //    loggerConfig
-                //        .MinimumLevel.Debug()
-                //        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                //        .Enrich.WithAspnetcoreHttpcontext(provider, false, AddCustomContextInfo)
-                //        .Enrich.FromLogContext()
-                //        .WriteTo.Console(
-                //            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {NewLine}{HttpContext} {NewLine}{UserInfo}");
-                //}, true);
+                
 
         public static void AddCustomContextInfo(IHttpContextAccessor ctx, LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {

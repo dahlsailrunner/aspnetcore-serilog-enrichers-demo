@@ -15,16 +15,12 @@ namespace SimpleApi
     public class Program
     {
         public static int Main(string[] args)
-        {
-            var name = Assembly.GetExecutingAssembly().GetName();
+        {            
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .MinimumLevel.Override("IdentityServer4", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .Enrich.WithMachineName()
-                .Enrich.WithProperty("Assembly", $"{name.Name}")
-                .Enrich.WithProperty("Version", $"{name.Version}")
+         
                 .WriteTo.File(new RenderedCompactJsonFormatter(), @"C:\users\edahl\Source\Logs\SimpleApi.json")
                 .CreateLogger();
 

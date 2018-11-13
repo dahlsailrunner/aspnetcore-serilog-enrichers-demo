@@ -4,7 +4,6 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Serilog;
-using Serilog.Context;
 
 namespace SimpleApi
 {
@@ -32,8 +31,7 @@ namespace SimpleApi
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             var code = HttpStatusCode.InternalServerError; // 500 if unexpected
-
-            LogContext.PushProperty("ApiErrorId", context.TraceIdentifier);            
+            
             Log.Error(exception, exception.Message);
 
             var result = JsonConvert.SerializeObject(new
