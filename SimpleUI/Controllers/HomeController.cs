@@ -99,19 +99,26 @@ namespace SimpleUI.Controllers
                     error = (string) j["error"];
                     id = (string) j["id"];
                 }
-
                 //below logs warning with these details and THEN throws excpetion, which will also get logged
                 //    but without the details from the API call and response.
                 //    An alternative would be to use Serilog.Enrichers.Exceptions and include the API details
                 //    in the ex.Data fields -- e.g. ex.Data.Add("ApiStatus", (int) response.StatusCode);
                 //    Then you would throw the exception and only get ONE log entry with all of the details
                 var ex = new Exception("API Failure");
-                Log.Warning(ex,
-                    "Got non-success response from API {ApiStatus}--{ApiError}--{ApiErrorId}--{ApiUrl}",
-                    (int) response.StatusCode,
-                    error,
-                    id,
-                    $"GET {apiRoute}");
+
+                ex.Data.Add("API Route", $"GET {apiRoute}");
+                ex.Data.Add("API Status", (int) response.StatusCode);
+                if (!string.IsNullOrEmpty(error))
+                {
+                    ex.Data.Add("API Error", error);
+                    ex.Data.Add("API ErrorId", id);
+                }
+                //Log.Warning(ex,
+                //    "Got non-success response from API {ApiStatus}--{ApiError}--{ApiErrorId}--{ApiUrl}",
+                //    (int) response.StatusCode,
+                //    error,
+                //    id,
+                //    $"GET {apiRoute}");
 
                 throw ex;
             }            

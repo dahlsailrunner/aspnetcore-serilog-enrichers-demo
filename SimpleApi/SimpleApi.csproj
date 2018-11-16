@@ -18,4 +18,10 @@
     <PackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Serilog.Enrichers.AspnetcoreHttpcontext">
+      <HintPath>..\..\serilog-enrichers-aspnetcore-httpcontext\src\Serilog.Enrichers.AspnetcoreHttpcontext\bin\Debug\netstandard2.0\Serilog.Enrichers.AspnetcoreHttpcontext.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
