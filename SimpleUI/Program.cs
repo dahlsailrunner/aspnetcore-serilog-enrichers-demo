@@ -72,38 +72,39 @@ namespace SimpleUI
                     loggerConfig
                         .MinimumLevel.Debug()
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                        .Enrich.WithAspnetcoreHttpcontext(provider, false, AddCustomContextInfo)
+                        .Enrich.WithAspnetcoreHttpcontext(provider, false, 
+                            AddCustomContextInfo)
                         .Enrich.FromLogContext()
                         .Enrich.WithExceptionDetails()
                         .Enrich.WithMachineName()
                         .Enrich.WithProperty("Assembly", $"{name.Name}")
                         .Enrich.WithProperty("Version", $"{name.Version}")                        
-                        .WriteTo.File(new CompactJsonFormatter(), @"C:\users\edahl\Source\Logs\SimpleUi.json");                    
+                        .WriteTo.File(new CompactJsonFormatter(), 
+                            @"C:\users\edahl\Source\Logs\SimpleUi.json");                    
                 });
         }
 
-        public static void AddCustomContextInfo(IHttpContextAccessor ctx, LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        public static void AddCustomContextInfo(IHttpContextAccessor ctx, 
+            LogEvent logEvent, ILogEventPropertyFactory pf)
         {
-            HttpContext context = ctx.HttpContext;
-            if (context == null)
-            {
-                return;
-            }
-            var userInfo = context.Items[$"serilog-enrichers-aspnetcore-userinfo"] as UserInfo;
+            var context = ctx.HttpContext;
+            if (context == null) return;
+            
+            var userInfo = context.Items["my-custom-info"] as UserInfo;
             if (userInfo == null)
             {
                 var user = context.User.Identity;
                 if (user == null || !user.IsAuthenticated) return;
-                var i  = 0;
+                var i=0;
                 userInfo = new UserInfo
                 {
                     Name = user.Name,
                     Claims = context.User.Claims.ToDictionary(x => $"{x.Type} ({i++})", y => y.Value)
                 };
-                context.Items[$"serilog-enrichers-aspnetcore-userinfo"] = userInfo;
-            }
+                context.Items["my-custom-info"] = userInfo;
+            }            
 
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("UserInfo", userInfo, true));
+            logEvent.AddPropertyIfAbsent(pf.CreateProperty("UserInfo", userInfo, true));
         }
     }
 }
