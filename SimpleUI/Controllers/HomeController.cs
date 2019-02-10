@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using Serilog;
+using Simple.Serilog.Attributes;
 using SimpleUI.Models;
 
 namespace SimpleUI.Controllers
@@ -15,25 +16,26 @@ namespace SimpleUI.Controllers
     public class HomeController : Controller
     {
         [AllowAnonymous]
+        [LogUsage("View Home Page")]
         public IActionResult Index()
         {
             return View();
         }
 
+        [LogUsage("View About Page")]
         public IActionResult About()
         {
-            var x = User;
-
             Log.Information("We got here....");
             ViewData["Message"] = "Your application description page.";
 
             return View();
         }
 
+        [LogUsage("View Bad Page")]
         public IActionResult BadPage(int id)
-        {
+        {            
             ViewData["Message"] = "Your exception page.";
-            throw new System.Exception("Craziness!!!");
+            throw new Exception("Craziness!!!");
             //return View();
         }
 
@@ -42,6 +44,7 @@ namespace SimpleUI.Controllers
             throw new Exception("Something bad happened.");
         }
 
+        [LogUsage("View Good API Page")]
         public async Task<IActionResult> GoodApi()
         {
             var client = new HttpClient();
@@ -65,6 +68,18 @@ namespace SimpleUI.Controllers
             
             ViewBag.Json = JArray.Parse(await response.Content.ReadAsStringAsync()).ToString();
             return View("BadApi");  // should never really get here....            
+        }
+
+        public async Task<IActionResult> GoodParamApi()
+        {
+            var client = new HttpClient();
+            var token = await HttpContext.GetTokenAsync("access_token");
+            client.SetBearerToken(token);
+
+            var response = await GetWithHandlingAsync(client, "https://localhost:44389/api/Values/456");
+
+            ViewBag.Json = await response.Content.ReadAsStringAsync();
+            return View(); 
         }
 
         public async Task<IActionResult> BadApi()
@@ -96,14 +111,10 @@ namespace SimpleUI.Controllers
                 if (response.Content.Headers.ContentLength > 0)
                 {
                     var j = JObject.Parse(await response.Content.ReadAsStringAsync());
-                    error = (string) j["error"];
-                    id = (string) j["id"];
+                    error = (string) j["Title"];
+                    id = (string) j["Id"];
                 }
-                //below logs warning with these details and THEN throws excpetion, which will also get logged
-                //    but without the details from the API call and response.
-                //    An alternative would be to use Serilog.Enrichers.Exceptions and include the API details
-                //    in the ex.Data fields -- e.g. ex.Data.Add("ApiStatus", (int) response.StatusCode);
-                //    Then you would throw the exception and only get ONE log entry with all of the details
+                
                 var ex = new Exception("API Failure");
 
                 ex.Data.Add("API Route", $"GET {apiRoute}");
@@ -112,14 +123,7 @@ namespace SimpleUI.Controllers
                 {
                     ex.Data.Add("API Error", error);
                     ex.Data.Add("API ErrorId", id);
-                }
-                //Log.Warning(ex,
-                //    "Got non-success response from API {ApiStatus}--{ApiError}--{ApiErrorId}--{ApiUrl}",
-                //    (int) response.StatusCode,
-                //    error,
-                //    id,
-                //    $"GET {apiRoute}");
-
+                }                
                 throw ex;
             }            
 

@@ -7,3 +7,7 @@
 /SimpleApi/obj
 /SimpleUI/bin/Debug/netcoreapp2.1
 /SimpleUI/obj
+/Simple.Serilog/bin/Debug/netstandard2.0
+/Simple.Serilog/obj
+/SimpleApi/bin/Debug/netcoreapp2.2
+/SimpleUI/bin/Debug/netcoreapp2.2

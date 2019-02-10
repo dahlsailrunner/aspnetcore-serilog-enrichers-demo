@@ -21,8 +21,12 @@ namespace SimpleApi.Controllers
         [HttpGet("{id}")]
         public ActionResult<string> Get(int id)
         {
-            throw new Exception("This message should NOT be seen by the caller!!");
-            //return "value";
+            if (id == 123)
+            {
+                throw new Exception("This message should NOT be seen by the caller!!");
+            }
+            
+            return "value";
         }
 
         // POST api/values

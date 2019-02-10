@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Simple.Serilog.Filters;
+using Simple.Serilog.Middleware;
 
 namespace SimpleApi
 {
@@ -17,7 +21,11 @@ namespace SimpleApi
         
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc(options =>
+            {
+                options.Filters.Add(new TrackPerformanceFilter());
+
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddAuthorization();
 
@@ -31,21 +39,21 @@ namespace SimpleApi
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            //if (env.IsDevelopment())
-            //{
-            //    app.UseDeveloperExceptionPage();
-            //}
-            //else
-            //{
-                
-            //}
-
+        {           
             app.UseHsts();
             app.UseHttpsRedirection();
             app.UseAuthentication();
-            app.UseMiddleware<CustomErrorMiddleware>();
+            app.UseApiExceptionHandler();  // from custom helper assembly
+            //app.UseApiExceptionHandler(opts => { opts.AddResponseDetails = AddCustomErrorInfo; });            
             app.UseMvc();
+        }
+
+        private void AddCustomErrorInfo(HttpContext ctx, Exception ex, ApiError error)
+        {
+            // set below values based on context (route, params, etc) or exception details.
+            //error.Detail = "";
+            //error.Links = "";
+            //error.Code = "";
         }
     }
 }
